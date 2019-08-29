@@ -6,22 +6,22 @@ describe('window commands', function() {
     Globals.protocolBefore.call(this);
   });
 
-  it('testWindowHandle', function() {
-    Globals.protocolTest.call(this, {
+  it('test .windowHandle()', function() {
+    return Globals.protocolTest.call(this, {
       assertion: function(opts) {
-        assert.equal(opts.method, 'GET');
-        assert.equal(opts.path, '/session/1352110219202/window_handle');
+        assert.strictEqual(opts.method, 'GET');
+        assert.strictEqual(opts.path, '/session/1352110219202/window_handle');
       },
       commandName: 'windowHandle',
       args: []
     });
   });
 
-  it('testWindowHandlePlural', function() {
-    Globals.protocolTest.call(this, {
+  it('test .windowHandles()', function() {
+    return Globals.protocolTest.call(this, {
       assertion: function(opts) {
-        assert.equal(opts.method, 'GET');
-        assert.equal(opts.path, '/session/1352110219202/window_handles');
+        assert.strictEqual(opts.method, 'GET');
+        assert.strictEqual(opts.path, '/session/1352110219202/window_handles');
       },
       commandName: 'windowHandles',
       args: []
@@ -29,10 +29,10 @@ describe('window commands', function() {
   });
 
   it('testCloseWindow', function() {
-    Globals.protocolTest.call(this, {
+    return Globals.protocolTest.call(this, {
       assertion: function(opts) {
-        assert.equal(opts.method, 'DELETE');
-        assert.equal(opts.path, '/session/1352110219202/window');
+        assert.strictEqual(opts.method, 'DELETE');
+        assert.strictEqual(opts.path, '/session/1352110219202/window');
       },
       commandName: 'window',
       args: ['DELETE']
@@ -40,10 +40,10 @@ describe('window commands', function() {
   });
 
   it('testSwitchWindow', function() {
-    Globals.protocolTest.call(this, {
+    return Globals.protocolTest.call(this, {
       assertion: function(opts) {
-        assert.equal(opts.method, 'POST');
-        assert.equal(opts.path, '/session/1352110219202/window');
+        assert.strictEqual(opts.method, 'POST');
+        assert.strictEqual(opts.path, '/session/1352110219202/window');
         assert.deepEqual(opts.data, {name: 'other-window'});
       },
       commandName: 'window',
@@ -65,7 +65,107 @@ describe('window commands', function() {
         protocol.window('GET');
       }, 'GET method throws an error'
     );
+  });
 
+  it('test .minimizeWindow()', function() {
+    return Globals.protocolTest.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'POST');
+        assert.strictEqual(opts.path, '/session/1352110219202/window/minimize');
+      },
+      commandName: 'minimizeWindow'
+    });
+  });
+
+  ////////////////////////////////////////////////////////////////////////
+  // W3C Webdriver
+  ////////////////////////////////////////////////////////////////////////
+  it('testSwitchWindow W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.path, '/session/1352110219202/window');
+        assert.deepEqual(opts.data, {handle: 'other-window'});
+      },
+      commandName: 'window',
+      args: ['POST', 'other-window']
+    });
+  });
+
+  it('test .windowHandle() W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.path, '/session/1352110219202/window');
+      },
+      commandName: 'windowHandle',
+      args: []
+    });
+  });
+
+  it('test .windowMaximize()', function() {
+    return Globals.protocolTest.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.path, '/session/1352110219202/window/current/maximize');
+      },
+      commandName: 'windowMaximize',
+      args: []
+    });
+  });
+
+  it('test .windowMaximize() W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'POST');
+        assert.strictEqual(opts.path, '/session/1352110219202/window/maximize');
+      },
+      commandName: 'windowMaximize',
+      args: []
+    });
+  });
+
+  it('test .windowHandles() W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'GET');
+        assert.strictEqual(opts.path, '/session/1352110219202/window/handles');
+      },
+      commandName: 'windowHandles',
+      args: []
+    });
+  });
+
+  it('test .minimizeWindow() W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'POST');
+        assert.strictEqual(opts.path, '/session/1352110219202/window/minimize');
+      },
+      commandName: 'minimizeWindow',
+      args: []
+    });
+  });
+
+  it('test .openNewWindow() W3C WebDriver', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'POST');
+        assert.deepEqual(opts.data, {type: 'tab'});
+        assert.strictEqual(opts.path, '/session/1352110219202/window/new');
+      },
+      commandName: 'openNewWindow',
+      args: []
+    });
+  });
+
+  it('test .openNewWindow() W3C WebDriver with specified type=window', function() {
+    return Globals.protocolTestWebdriver.call(this, {
+      assertion: function(opts) {
+        assert.strictEqual(opts.method, 'POST');
+        assert.deepEqual(opts.data, {type: 'window'});
+        assert.strictEqual(opts.path, '/session/1352110219202/window/new');
+      },
+      commandName: 'openNewWindow',
+      args: ['window']
+    });
   });
 
 });

@@ -6,6 +6,7 @@ const MockServer = require('../../lib/mockserver.js');
 const NightwatchClient = common.require('index.js');
 
 describe('testRunTestSuite', function() {
+
   before(function(done) {
     this.server = MockServer.init();
 
@@ -34,6 +35,7 @@ describe('testRunTestSuite', function() {
     let testsPath = path.join(__dirname, '../../sampletests/withfailures');
     let globals = {
       calls: 0,
+      retryAssertionTimeout: 0,
       reporter(results, cb) {
         assert.equal(settings.globals.calls, 8);
         assert.deepEqual(results.errmessages, []);
@@ -52,6 +54,7 @@ describe('testRunTestSuite', function() {
         start_process: true
       },
       output: false,
+      silent: true,
       persist_globals: true,
       globals: globals,
       output_folder: false
@@ -67,6 +70,7 @@ describe('testRunTestSuite', function() {
     let testsPath = path.join(__dirname, '../../sampletests/withfailures');
     let globals = {
       calls: 0,
+      retryAssertionTimeout: 0,
       reporter(results, cb) {
         assert.equal(settings.globals.calls, 12);
         assert.equal(results.errors, 0);
@@ -95,8 +99,6 @@ describe('testRunTestSuite', function() {
   });
 
   it('testRunner with suiteRetries and locate strategy change', function() {
-    const Logger = common.require('util/logger.js');
-    Logger.setOutputEnabled(false);
     let testsPath = path.join(__dirname, '../../sampletests/suiteretries/locate-strategy');
     let globals = {
       calls: 0,
@@ -155,6 +157,7 @@ describe('testRunTestSuite', function() {
         start_process: true
       },
       output: false,
+      silent: true,
       persist_globals: true,
       globals: globals,
       output_folder: false
@@ -167,10 +170,37 @@ describe('testRunTestSuite', function() {
   });
 
   it('testRunModuleSyncName', function() {
+    MockServer.addMock({
+      url: '/wd/hub/session/1352110219202/elements',
+      postdata : '{"using":"css selector","value":"#finlandia"}',
+      response: JSON.stringify({sessionId:'1352110219202',status:0,value:[{ELEMENT: '10'}]})
+    });
+
+    MockServer.addMock({
+      url: '/wd/hub/session/1352110219202/element/10/displayed',
+      statusCode: 200,
+      method: 'GET',
+      response: JSON.stringify({sessionId:'1352110219202',status:0,value:true})
+    });
+
+    MockServer.addMock({
+      url: '/wd/hub/session/1352110219202/element',
+      statusCode: 200,
+      response: JSON.stringify({sessionId:'1352110219202',status:0,value: {ELEMENT: '10'}})
+    });
+
+    MockServer.addMock({
+      url: '/wd/hub/session/1352110219202/element/10/text',
+      statusCode: 200,
+      method: 'GET',
+      response: JSON.stringify({sessionId:'1352110219202',status:0,value:'jean sibelius'})
+    }, true);
+
     let globals = {
       calls: 0,
       reporter(results, cb) {
         assert.ok('sampleTest' in results.modules);
+        assert.strictEqual(results.errors, 0);
         if (results.lastError) {
           throw results.lastError;
         }

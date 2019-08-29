@@ -1,22 +1,19 @@
 const assert = require('assert');
 const mockery = require('mockery');
-const Globals = require('../../lib/globals/expect.js');
+const CommandGlobals = require('../../lib/globals/commands.js');
 
 describe('test Assertions', function() {
-  beforeEach(function(done) {
-    Globals.beforeEach.call(this, {
-      silent: true,
-      output: false
-    }, function() {
-      mockery.enable({useCleanCache: true, warnOnUnregistered: false});
-      done();
-    });
+  before(CommandGlobals.beforeEach);
+  after(CommandGlobals.afterEach);
+
+  beforeEach(function() {
+    mockery.enable({useCleanCache: true, warnOnUnregistered: false});
   });
 
   afterEach(function(done) {
     mockery.deregisterAll();
     mockery.disable();
-    Globals.afterEach.call(this, done);
+    done();
   });
 
   it('Testing assertions loaded', function() {
@@ -115,14 +112,14 @@ describe('test Assertions', function() {
       callback({
         value : 'expected text result'
       });
-    }).setAddToQueueFn(function(commandName, command, context, args, stackTrace) {
-      command.apply(context, args);
+    }).setAddToQueueFn(function({commandName, commandFn, context, args, namespace, stackTrace}) {
+      commandFn.apply(context, args);
     }).loadAssertion(function(passed, value, calleeFn, message) {
       assert.equal(passed, true);
       assert.equal(this.assertion.expected, 'text result');
       assert.equal(this.assertion.abortOnFailure, true);
       assert.equal(this.assertion.passed, true);
-      assert.ok(this.assertion.message.startsWith('Test message after'));
+      assert.ok(this.assertion.message.startsWith('Test message '));
       assert.strictEqual(this.assertion.calleeFn, calleeFn);
 
       assert.equal(reporterCalls.passedNo, 1, 'Reporter passedNo was not incremented');
@@ -144,7 +141,7 @@ describe('test Assertions', function() {
       },
       logFailedAssertion(error) {
         assert.ok(error instanceof Error);
-        assert.equal(error.name, 'AssertionError');
+        assert.equal(error.name, 'NightwatchAssertError');
       },
       registerFailed() {
         reporterCalls.failedNo++;
@@ -154,7 +151,7 @@ describe('test Assertions', function() {
         assert.ok('message' in test);
 
         let stackTraceSections = test.stackTrace.split('\n');
-        assert.ok(/^Test message after (\d+) milliseconds\./.test(test.fullMsg));
+        assert.ok(/^Test message in (\d+) ms\./.test(test.fullMsg));
         assert.ok(stackTraceSections[1].indexOf('api-loader/testAssertions.js') > -1);
         assert.equal(test.failure, 'Expected "text result" but got: "not_expected"');
       }
@@ -171,9 +168,9 @@ describe('test Assertions', function() {
       callback({
         value : 'not_expected'
       });
-    }).setAddToQueueFn(function(commandName, command, context, args, stackTrace) {
-      command.stackTrace = stackTrace;
-      command.apply(context, args);
+    }).setAddToQueueFn(function({commandName, commandFn, context, args, namespace, stackTrace}) {
+      commandFn.stackTrace = stackTrace;
+      commandFn.apply(context, args);
     }).loadAssertion(function(passed, value, calleeFn, message) {
       assert.equal(passed, false);
       assert.equal(value, 'not_expected');
@@ -181,9 +178,9 @@ describe('test Assertions', function() {
       assert.equal(this.assertion.passed, false);
       assert.equal(this.assertion.expected, 'text result');
       assert.equal(this.retries, 1);
-      assert.equal(this.timeout, 5);
-      assert.equal(this.rescheduleInterval, 10);
-      assert.ok(this.assertion.message.startsWith('Test message after'));
+      assert.equal(this.opts.timeout, 5);
+      assert.equal(this.opts.rescheduleInterval, 10);
+      assert.ok(this.assertion.message.startsWith('Test message in'));
 
       assert.equal(reporterCalls.passedNo, 0);
       assert.strictEqual(reporterCalls.failedNo, 1);

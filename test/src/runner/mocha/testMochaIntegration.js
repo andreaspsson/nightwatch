@@ -32,7 +32,8 @@ describe('test Mocha integration', function() {
       },
       persist_globals: true,
       globals: {
-        test_calls: 0
+        test_calls: 0,
+        retryAssertionTimeout: 0
       },
       output: false,
       silent: true,

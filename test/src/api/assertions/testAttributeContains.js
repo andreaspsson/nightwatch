@@ -17,9 +17,30 @@ describe('assert.attributeContains', function () {
         }
       },
       assertion(passed, value, calleeFn, message) {
-        assert.equal(passed, true);
+        assert.strictEqual(passed, true);
         assert.equal(value, 'http://www.google.com');
         assert.ok(message.startsWith('Test message'));
+      }
+    }, done);
+  });
+
+  it('attributeContains assertion passed with selector object', function (done) {
+    Globals.assertionTest({
+      assertionName: 'attributeContains',
+      args: [{
+        selector: '.test_element'
+      }, 'href', 'google'],
+      api: {
+        getAttribute(cssSelector, attribute, callback) {
+          assert.deepStrictEqual(cssSelector, {selector: '.test_element'});
+          callback({
+            value: 'http://www.google.com'
+          });
+        }
+      },
+      assertion(passed, value, calleeFn, message) {
+        assert.strictEqual(passed, true);
+        assert.ok(message.startsWith('Testing if attribute href of <.test_element> contains "google"'));
       }
     }, done);
   });
